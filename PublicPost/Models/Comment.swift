@@ -5,6 +5,7 @@ import Foundation
 nonisolated struct Comment: Codable, Identifiable, Hashable, Sendable {
     let id: String
     let articleId: String
+    let authorId: String           // used to block a user and to recognise my own comments
     let authorName: String
     let text: String
     let createdAt: Date
@@ -15,7 +16,7 @@ nonisolated struct Comment: Codable, Identifiable, Hashable, Sendable {
     var isReply: Bool { parentId != nil }
 
     enum CodingKeys: String, CodingKey {
-        case id, articleId, authorName, text, createdAt, upvotes, parentId, userUpvoted
+        case id, articleId, authorId, authorName, text, createdAt, upvotes, parentId, userUpvoted
     }
 }
 
@@ -26,6 +27,7 @@ extension Comment {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
         articleId = try c.decode(String.self, forKey: .articleId)
+        authorId = try c.decode(String.self, forKey: .authorId)
         authorName = try c.decode(String.self, forKey: .authorName)
         text = try c.decode(String.self, forKey: .text)
         createdAt = try c.decode(Date.self, forKey: .createdAt)
@@ -35,11 +37,32 @@ extension Comment {
     }
 }
 
+/// Why a comment is being reported. Raw values are what the backend expects.
+nonisolated enum ReportReason: String, Codable, CaseIterable, Identifiable, Sendable {
+    case spam
+    case abuse
+    case misinformation
+    case other
+
+    var id: String { rawValue }
+
+    /// Text shown in the Report menu.
+    var title: String {
+        switch self {
+        case .spam: "Spam"
+        case .abuse: "Abuse or harassment"
+        case .misinformation: "Misinformation"
+        case .other: "Something else"
+        }
+    }
+}
+
 extension Comment {
     /// Sample comment for SwiftUI previews.
     static let preview = Comment(
         id: "preview-c1",
         articleId: "preview-1",
+        authorId: "u_asha",
         authorName: "Asha",
         text: "Good idea in principle, but I want to see how they plan to pay for it.",
         createdAt: Date().addingTimeInterval(-1_800),

@@ -3,15 +3,40 @@ import Foundation
 /// App-wide configuration. This is the ONE place to change the backend URL or to
 /// switch between the mock data and the real FastAPI backend.
 nonisolated enum Config {
-    /// `true`  -> use bundled JSON + in-memory votes/comments (no backend needed).
-    /// `false` -> use the FastAPI backend, with automatic fallback to the bundled news.
-    static let useMockService = true
 
-    /// Base URL of the FastAPI backend.
-    /// (The simulator can reach 127.0.0.1 on your Mac; a real iPhone needs your Mac's LAN IP.)
+    // MARK: - Backend URL  (the ONE place to change it)
+
+    #if DEBUG
+    /// Debug builds (running from Xcode). The simulator reaches your Mac at 127.0.0.1.
+    ///
+    /// TESTING ON A REAL iPHONE: the phone can't see "127.0.0.1" (that is the phone itself).
+    ///   1. Start the backend with `uv run uvicorn app.main:app --host 0.0.0.0`
+    ///   2. Find your Mac's address: System Settings > Wi-Fi > Details > IP address
+    ///      (or run `ipconfig getifaddr en0`), e.g. 192.168.1.23
+    ///   3. Replace the URL below with `http://192.168.1.23:8000` (phone and Mac on the same Wi-Fi).
+    ///   Plain HTTP is only allowed to local network addresses (see NSAllowsLocalNetworking).
     static let baseURL = URL(string: "http://127.0.0.1:8000")!
+    #else
+    /// Release builds. TODO: replace with the production HTTPS URL after deployment,
+    /// e.g. `https://api.example.com`. Until then this only works against a local server.
+    static let baseURL = URL(string: "http://127.0.0.1:8000")!
+    #endif
 
-    /// Number of articles per page (used by the mock service to mimic `?page=`).
+    // MARK: - Mock / real switch
+
+    /// `false` -> use the FastAPI backend, with automatic fallback to the bundled news.
+    /// `true`  -> run fully offline with bundled JSON + in-memory votes and comments.
+    static let useMockService = false
+
+    /// What the services below actually follow: the switch above, or always mock inside
+    /// SwiftUI previews so previews never touch the network.
+    static var usesMockData: Bool {
+        useMockService || ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
+    // MARK: - Other settings
+
+    /// Number of articles per page (the backend returns 10; the mock mimics it).
     static let pageSize = 10
 
     // One shared instance of each, so every screen sees the same data.
@@ -23,17 +48,17 @@ nonisolated enum Config {
 
     /// The service the view models should use for news. Views never see which one it is.
     static var newsService: any NewsService {
-        useMockService ? mock : resilient
+        usesMockData ? mock : resilient
     }
 
     /// The service the view models should use for discussions.
     static var discussionService: any DiscussionService {
-        useMockService ? mock : resilient
+        usesMockData ? mock : resilient
     }
 
     /// The service used for login and registration. There is deliberately no mock fallback
     /// when the real API is selected: a down server must not let anyone "log in".
     static var authService: any AuthService {
-        useMockService ? mockAuth : api
+        usesMockData ? mockAuth : api
     }
 }
