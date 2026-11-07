@@ -66,11 +66,13 @@ struct ModerationAndOfflineTests {
         }
         let viewModel = DiscussionViewModel(article: makeArticle(id: "a1"), service: server.api)
         await viewModel.load()
-        #expect(viewModel.threads.count == 2)   // the reply's parent is c1, but both are visible to start with
+        #expect(viewModel.threads.count == 1)               // Meera's comment...
+        #expect(viewModel.threads[0].replies.count == 1)    // ...with Ravi's reply under it
 
-        // Success: Meera's comment disappears.
+        // Success: Meera's comment disappears at once (Ravi's reply is shown on its own).
         await viewModel.block(comments[0])
         #expect(viewModel.threads.allSatisfy { $0.comment.authorId != "u_abc123" })
+        #expect(viewModel.threads.map { $0.comment.id } == ["c2"])
         #expect(viewModel.notice != nil)
 
         // Failure: Ravi's comment comes back.

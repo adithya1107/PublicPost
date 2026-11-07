@@ -7,6 +7,9 @@ struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
     @State private var loginPrompt: LoginPrompt?
     @State private var isConfirmingLogout = false
+    @State private var isConfirmingDelete = false
+    @State private var isDeleting = false
+    @State private var deleteError: String?
 
     init(viewModel: ProfileViewModel = ProfileViewModel()) {
         _viewModel = State(initialValue: viewModel)
@@ -34,6 +37,25 @@ struct ProfileView: View {
                     auth.logout()
                     viewModel.reset()
                 }
+            }
+            .confirmationDialog(
+                "Delete your account?",
+                isPresented: $isConfirmingDelete,
+                titleVisibility: .visible
+            ) {
+                Button("Delete account", role: .destructive) {
+                    Task { await deleteAccount() }
+                }
+            } message: {
+                Text("This permanently deletes your account, votes and blocks, and can't be undone. Your comments stay visible but are shown as \"[deleted]\".")
+            }
+            .alert("Couldn't delete account", isPresented: Binding(
+                get: { deleteError != nil },
+                set: { if !$0 { deleteError = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(deleteError ?? "")
             }
         }
         // Reload whenever the logged-in user changes (login, logout, switching accounts).
@@ -96,8 +118,29 @@ struct ProfileView: View {
                     }
                 }
             }
+
+            Section {
+                Button("Delete account", role: .destructive) {
+                    isConfirmingDelete = true
+                }
+                .disabled(isDeleting)
+            } footer: {
+                Text("Permanently deletes your account and data.")
+            }
         }
         .refreshable { await viewModel.load(showSpinner: false) }
+    }
+
+    /// Deletes the account on the server, then returns to guest mode (done inside `AuthManager`).
+    private func deleteAccount() async {
+        isDeleting = true
+        defer { isDeleting = false }
+        do {
+            try await auth.deleteAccount()
+            viewModel.reset()
+        } catch {
+            deleteError = error.userMessage
+        }
     }
 
     private func row(_ item: ProfileComment) -> some View {
@@ -133,12 +176,15 @@ private struct PreviewProfileService: DiscussionService {
     func postComment(articleId: String, text: String, parentId: String?) async throws -> Comment { .preview }
     func setCommentUpvote(articleId: String, commentId: String, upvoted: Bool) async throws -> Int { 0 }
 
+    func reportComment(commentId: String, reason: ReportReason) async throws {}
+    func blockUser(userId: String) async throws {}
+
     func fetchMyComments() async throws -> [Comment] {
         [
-            Comment(id: "m1", articleId: "n04", authorName: "Guest Reader",
+            Comment(id: "m1", articleId: "n04", authorId: User.mockCurrent.id, authorName: "Guest Reader",
                     text: "Start small with unplugged logic puzzles. You don't need a computer to teach thinking.",
                     createdAt: Date().addingTimeInterval(-7_200), upvotes: 6, parentId: nil),
-            Comment(id: "m2", articleId: "n10", authorName: "Guest Reader",
+            Comment(id: "m2", articleId: "n10", authorId: User.mockCurrent.id, authorName: "Guest Reader",
                     text: "Cycle life is the real test for any fast-charging claim.",
                     createdAt: Date().addingTimeInterval(-86_400), upvotes: 2, parentId: nil)
         ]

@@ -6,6 +6,8 @@ struct DiscussionView: View {
     @Environment(AuthManager.self) private var auth
     @State private var viewModel: DiscussionViewModel
     @State private var loginPrompt: LoginPrompt?
+    /// The comment whose author the user is about to block (shows a confirmation).
+    @State private var commentToBlock: Comment?
     @FocusState private var isComposerFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
@@ -47,10 +49,28 @@ struct DiscussionView: View {
         }
         .task { await viewModel.load() }
         .loginSheet(item: $loginPrompt)
+        .sessionExpiredAlert()   // this sheet covers the root view, so it shows the alert itself
         .alert("Something went wrong", isPresented: actionErrorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.actionError ?? "")
+        }
+        .alert("Done", isPresented: noticeBinding) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.notice ?? "")
+        }
+        .confirmationDialog(
+            "Block \(commentToBlock?.authorName ?? "this user")?",
+            isPresented: Binding(get: { commentToBlock != nil }, set: { if !$0 { commentToBlock = nil } }),
+            titleVisibility: .visible,
+            presenting: commentToBlock
+        ) { comment in
+            Button("Block \(comment.authorName)", role: .destructive) {
+                Task { await viewModel.block(comment) }
+            }
+        } message: { comment in
+            Text("You won't see comments from \(comment.authorName) any more.")
         }
     }
 
@@ -131,7 +151,9 @@ struct DiscussionView: View {
                     }
                     viewModel.startReply(to: thread.comment)
                     isComposerFocused = true
-                }
+                },
+                onReport: reportAction(for: thread.comment),
+                onBlock: blockAction(for: thread.comment)
             )
             .id(thread.comment.id)
 
@@ -139,7 +161,9 @@ struct DiscussionView: View {
                 CommentRowView(
                     comment: reply,
                     onUpvote: { upvote(reply) },
-                    onReply: nil
+                    onReply: nil,
+                    onReport: reportAction(for: reply),
+                    onBlock: blockAction(for: reply)
                 )
                 .id(reply.id)
                 .padding(.leading, 28)
@@ -153,6 +177,32 @@ struct DiscussionView: View {
             }
 
             Divider()
+        }
+    }
+
+    /// Report action for a comment, or `nil` for my own comments (you can't report yourself).
+    /// Guests are asked to log in first, because the server needs to know who is reporting.
+    private func reportAction(for comment: Comment) -> ((ReportReason) -> Void)? {
+        guard comment.authorId != auth.currentUser?.id else { return nil }
+        return { reason in
+            guard auth.isLoggedIn else {
+                loginPrompt = LoginPrompt(reason: "Log in to report comments.")
+                return
+            }
+            Task { await viewModel.report(comment, reason: reason) }
+        }
+    }
+
+    /// Block action for a comment's author, or `nil` for my own comments.
+    /// It asks for confirmation first (see `confirmationDialog` above).
+    private func blockAction(for comment: Comment) -> (() -> Void)? {
+        guard comment.authorId != auth.currentUser?.id else { return nil }
+        return {
+            guard auth.isLoggedIn else {
+                loginPrompt = LoginPrompt(reason: "Log in to block users.")
+                return
+            }
+            commentToBlock = comment
         }
     }
 
@@ -182,6 +232,13 @@ struct DiscussionView: View {
         .background(.bar)
     }
 
+    private var noticeBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.notice != nil },
+            set: { if !$0 { viewModel.notice = nil } }
+        )
+    }
+
     private var actionErrorBinding: Binding<Bool> {
         Binding(
             get: { viewModel.actionError != nil },
@@ -209,21 +266,22 @@ private struct PreviewDiscussionService: DiscussionService {
     func fetchComments(articleId: String) async throws -> [Comment] {
         let now = Date()
         return [
-            Comment(id: "p1", articleId: articleId, authorName: "Asha",
+            Comment(id: "p1", articleId: articleId, authorId: "u_asha", authorName: "Asha",
                     text: "Good idea in principle, but I want to see how they plan to pay for it.",
                     createdAt: now.addingTimeInterval(-3_600), upvotes: 24, parentId: nil),
-            Comment(id: "p2", articleId: articleId, authorName: "Ravi",
+            Comment(id: "p2", articleId: articleId, authorId: "u_ravi", authorName: "Ravi",
                     text: "The pilot is only six months, so the cost is limited. Let's see the numbers first.",
                     createdAt: now.addingTimeInterval(-3_000), upvotes: 9, parentId: "p1"),
-            Comment(id: "p3", articleId: articleId, authorName: "Meera",
+            Comment(id: "p3", articleId: articleId, authorId: "u_meera", authorName: "Meera",
                     text: "Free buses on weekends would help our family a lot.",
                     createdAt: now.addingTimeInterval(-1_200), upvotes: 31, parentId: nil)
         ]
     }
 
     func postComment(articleId: String, text: String, parentId: String?) async throws -> Comment {
-        Comment(id: UUID().uuidString, articleId: articleId, authorName: "Guest Reader",
-                text: text, createdAt: Date(), upvotes: 0, parentId: parentId)
+        Comment(id: UUID().uuidString, articleId: articleId, authorId: User.mockCurrent.id,
+                authorName: User.mockCurrent.displayName, text: text, createdAt: Date(),
+                upvotes: 0, parentId: parentId)
     }
 
     func setCommentUpvote(articleId: String, commentId: String, upvoted: Bool) async throws -> Int {
@@ -231,4 +289,6 @@ private struct PreviewDiscussionService: DiscussionService {
     }
 
     func fetchMyComments() async throws -> [Comment] { [] }
+    func reportComment(commentId: String, reason: ReportReason) async throws {}
+    func blockUser(userId: String) async throws {}
 }

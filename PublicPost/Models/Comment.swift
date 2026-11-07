@@ -20,7 +20,7 @@ nonisolated struct Comment: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
-extension Comment {
+nonisolated extension Comment {
     /// Custom decoding so `user_upvoted` may be missing (e.g. guests) and defaults to `false`.
     /// Declared in an extension so the memberwise initializer is kept.
     init(from decoder: Decoder) throws {
@@ -57,7 +57,7 @@ nonisolated enum ReportReason: String, Codable, CaseIterable, Identifiable, Send
     }
 }
 
-extension Comment {
+nonisolated extension Comment {
     /// Sample comment for SwiftUI previews.
     static let preview = Comment(
         id: "preview-c1",

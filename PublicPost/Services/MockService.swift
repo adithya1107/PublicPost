@@ -9,6 +9,9 @@ actor MockService: NewsService, DiscussionService {
     private var articles: [Article] = []
     private var comments: [Comment] = []
     private var isLoaded = false
+    /// Users the (mock) current user has blocked, and comments they have reported.
+    private var blockedUserIds: Set<String> = []
+    private var reportedCommentIds: Set<String> = []
 
     // MARK: - Loading
 
@@ -62,7 +65,8 @@ actor MockService: NewsService, DiscussionService {
 
     func fetchComments(articleId: String) async throws -> [Comment] {
         try loadIfNeeded()
-        return comments.filter { $0.articleId == articleId }
+        // Like the real server: comments from users the caller has blocked are left out.
+        return comments.filter { $0.articleId == articleId && !blockedUserIds.contains($0.authorId) }
     }
 
     func postComment(articleId: String, text: String, parentId: String?) async throws -> Comment {
@@ -80,6 +84,7 @@ actor MockService: NewsService, DiscussionService {
         let comment = Comment(
             id: UUID().uuidString,
             articleId: articleId,
+            authorId: SessionStore.user?.id ?? User.mockCurrent.id,
             authorName: SessionStore.user?.displayName ?? User.mockCurrent.displayName,
             text: text,
             createdAt: Date(),
@@ -106,8 +111,21 @@ actor MockService: NewsService, DiscussionService {
 
     func fetchMyComments() async throws -> [Comment] {
         try loadIfNeeded()
-        // The mock matches by display name; a real backend would use the user id from the token.
-        guard let name = SessionStore.user?.displayName else { throw ServiceError.unauthorized }
-        return comments.filter { $0.authorName == name }
+        guard let userId = SessionStore.user?.id else { throw ServiceError.unauthorized }
+        return comments.filter { $0.authorId == userId }
+    }
+
+    func reportComment(commentId: String, reason: ReportReason) async throws {
+        try loadIfNeeded()
+        guard comments.contains(where: { $0.id == commentId }) else { throw ServiceError.notFound }
+        reportedCommentIds.insert(commentId)   // a real server stores this for moderators
+    }
+
+    func blockUser(userId: String) async throws {
+        try loadIfNeeded()
+        guard userId != SessionStore.user?.id else {
+            throw ServiceError.api("You can't block yourself.")
+        }
+        blockedUserIds.insert(userId)
     }
 }

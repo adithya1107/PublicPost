@@ -55,17 +55,29 @@ final class AuthManager {
     }
 
     func logout() {
-        SessionStore.clear()
-        currentUser = nil
+        endSession()
+    }
+
+    /// Permanently deletes the account on the server, then returns to guest mode.
+    /// If the server call fails, the user stays logged in and the error is thrown.
+    func deleteAccount() async throws {
+        try await service.deleteAccount()
+        endSession()
     }
 
     /// The server said our token is no longer valid: forget the login, go back to guest
     /// mode and explain why. Safe to call several times (several requests may fail together).
     func handleSessionExpired() {
         guard isLoggedIn else { return }
-        SessionStore.clear()
-        currentUser = nil
+        endSession()
         sessionExpiredMessage = ServiceError.sessionExpired.errorDescription
+    }
+
+    /// Forgets the login and the saved feed (which contains this user's votes).
+    private func endSession() {
+        SessionStore.clear()
+        FeedCache.shared.clear()
+        currentUser = nil
     }
 }
 

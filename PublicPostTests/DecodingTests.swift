@@ -91,7 +91,7 @@ struct DecodingTests {
         let comments = try BundledData.loadComments()
 
         #expect(articles.count == 25)
-        #expect(articles.allSatisfy(\.isSample))
+        #expect(articles.allSatisfy { $0.isSample })
         #expect(comments.allSatisfy { !$0.authorId.isEmpty })
     }
 }

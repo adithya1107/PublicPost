@@ -34,6 +34,9 @@ nonisolated struct Article: Codable, Identifiable, Hashable, Sendable {
     var downvotes: Int
     var commentCount: Int
     var userVote: Vote             // the current user's vote
+    /// `true` for the stories bundled in the app (offline samples). Never sent by or saved
+    /// from the server; their links are placeholders, so the UI hides "Read full article".
+    var isSample: Bool = false
 
     /// Net score shown in the UI (upvotes minus downvotes).
     var score: Int { upvotes - downvotes }
@@ -48,7 +51,7 @@ nonisolated struct Article: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
-extension Article {
+nonisolated extension Article {
     /// The vote that results from tapping `tapped`: tapping the vote you already
     /// have removes it, otherwise the tapped vote replaces the current one.
     func voteAfterTapping(_ tapped: Vote) -> Vote {
@@ -72,7 +75,7 @@ extension Article {
     }
 }
 
-extension Article {
+nonisolated extension Article {
     /// Custom decoding so `user_vote` may be missing (e.g. guests) and defaults to `.none`.
     /// Declared in an extension so the memberwise initializer is kept.
     init(from decoder: Decoder) throws {
@@ -92,7 +95,7 @@ extension Article {
     }
 }
 
-extension Article {
+nonisolated extension Article {
     /// Sample article for SwiftUI previews.
     static let preview = Article(
         id: "preview-1",

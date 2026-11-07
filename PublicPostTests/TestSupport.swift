@@ -1,6 +1,10 @@
 import Foundation
 @testable import PublicPost
 
+/// The Testing framework also defines a `Comment` type; this makes plain `Comment` mean ours
+/// in every test file.
+typealias Comment = PublicPost.Comment
+
 // MARK: - Fake HTTP server
 
 /// What the app sent, as recorded by the stub.
@@ -110,7 +114,8 @@ final class StubServer: @unchecked Sendable {
         self.init { _ in reply }
     }
 
-    deinit { StubURLProtocol.removeHandler(for: host) }
+    // No cleanup in deinit on purpose: `api` outlives the server object (tests often write
+    // `makeService(server: StubServer(...))`), and each test uses its own unique host anyway.
 
     var api: APIService { APIService(baseURL: URL(string: "http://\(host)")!, session: session) }
     var requests: [RecordedRequest] { StubURLProtocol.requests(for: host) }

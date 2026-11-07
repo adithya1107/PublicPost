@@ -6,7 +6,7 @@ nonisolated struct User: Codable, Identifiable, Hashable, Sendable {
     let displayName: String
 }
 
-extension User {
+nonisolated extension User {
     /// The user the mock service pretends is signed in.
     static let mockCurrent = User(id: "u_me", displayName: "Guest Reader")
 }

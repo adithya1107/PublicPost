@@ -7,6 +7,12 @@ nonisolated struct AuthSession: Codable, Sendable {
     let user: User
 }
 
+extension Notification.Name {
+    /// Posted by `APIService` when the server rejects the saved token (HTTP 401 on a logged-in
+    /// request). `AuthManager` listens and returns the app to guest mode.
+    nonisolated static let sessionExpired = Notification.Name("PublicPost.sessionExpired")
+}
+
 /// Account operations. Implemented by `MockAuthService` and (Phase 6) `APIService`.
 nonisolated protocol AuthService: Sendable {
     /// POST /auth/register
@@ -14,6 +20,10 @@ nonisolated protocol AuthService: Sendable {
 
     /// POST /auth/login
     func login(email: String, password: String) async throws -> AuthSession
+
+    /// DELETE /users/me: permanently deletes the logged-in user's account
+    /// (App Store guideline 5.1.1(v): apps with account creation must offer account deletion).
+    func deleteAccount() async throws
 }
 
 /// The saved login: the token goes in the Keychain, and so does the user's name
@@ -72,5 +82,11 @@ actor MockAuthService: AuthService {
             throw ServiceError.invalidCredentials
         }
         return AuthSession(token: "mock-token-\(account.user.id)", user: account.user)
+    }
+
+    func deleteAccount() async throws {
+        // The session's user id tells us which mock account to remove.
+        guard let userId = SessionStore.user?.id else { throw ServiceError.unauthorized }
+        accounts = accounts.filter { $0.value.user.id != userId }
     }
 }

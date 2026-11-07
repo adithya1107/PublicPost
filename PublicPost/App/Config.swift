@@ -34,6 +34,19 @@ nonisolated enum Config {
         useMockService || ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
 
+    // MARK: - Image cache
+
+    /// Story images are loaded by `AsyncImage`, which uses the shared `URLCache`. The system
+    /// default (about 10 MB on disk) is small for photo thumbnails, so enlarge it: images
+    /// then stay in memory (fast scrolling) and on disk (survive relaunch, work offline).
+    /// Called once when the app starts.
+    static func configureImageCache() {
+        URLCache.shared = URLCache(
+            memoryCapacity: 50 * 1024 * 1024,    // 50 MB in memory
+            diskCapacity: 300 * 1024 * 1024      // 300 MB on disk (iOS trims it if space is low)
+        )
+    }
+
     // MARK: - Other settings
 
     /// Number of articles per page (the backend returns 10; the mock mimics it).

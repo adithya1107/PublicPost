@@ -88,6 +88,19 @@ nonisolated protocol NewsService: Sendable {
 
     /// POST /articles/{id}/vote
     func vote(articleId: String, vote: Vote) async throws -> VoteResult
+
+    /// Stories saved from the last successful load of page 1, to show instantly while the
+    /// real load runs. Services without a cache return an empty list (see the default below).
+    func cachedArticles(category: NewsCategory?) async -> [Article]
+
+    /// `true` while the feed is showing saved or sample stories because the server can't be
+    /// reached. Services that never fall back return `false`.
+    func isOffline() async -> Bool
+}
+
+extension NewsService {
+    nonisolated func cachedArticles(category: NewsCategory?) async -> [Article] { [] }
+    nonisolated func isOffline() async -> Bool { false }
 }
 
 /// Everything the discussion screen needs.
@@ -104,4 +117,12 @@ nonisolated protocol DiscussionService: Sendable {
 
     /// GET /users/me/comments: the logged-in user's own comments, for the Profile tab.
     func fetchMyComments() async throws -> [Comment]
+
+    /// POST /comments/{id}/report  with body {"reason": "spam" | "abuse" | "misinformation" | "other"}.
+    /// (App Store guideline 1.2: users must be able to flag objectionable content.)
+    func reportComment(commentId: String, reason: ReportReason) async throws
+
+    /// POST /users/{id}/block. After this the server leaves that user's comments out of
+    /// `fetchComments` for the caller. (App Store guideline 1.2: users must be able to block abusers.)
+    func blockUser(userId: String) async throws
 }

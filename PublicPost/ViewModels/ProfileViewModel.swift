@@ -52,7 +52,7 @@ final class ProfileViewModel {
             state = items.isEmpty ? .empty : .loaded
         } catch {
             if error is CancellationError || (error as? URLError)?.code == .cancelled { return }
-            state = .error(error.localizedDescription)
+            state = .error(error.friendlyMessage)
         }
     }
 

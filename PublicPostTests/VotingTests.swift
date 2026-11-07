@@ -20,8 +20,7 @@ struct VotingTests {
     }
 
     @Test func switchingVoteMovesTheCount() {
-        var article = makeArticle(upvotes: 10, downvotes: 2, userVote: .up)
-        article.upvotes = 11   // the user's own upvote is already counted
+        var article = makeArticle(upvotes: 11, downvotes: 2, userVote: .up)   // 11 includes my upvote
 
         article.setVote(article.voteAfterTapping(.down))
         #expect(article.userVote == .down)

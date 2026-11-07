@@ -42,7 +42,7 @@ struct ResilientServiceTests {
         let articles = try await service.fetchArticles(category: nil, page: 1)
 
         #expect(articles.count == Config.pageSize)
-        #expect(articles.allSatisfy(\.isSample))
+        #expect(articles.allSatisfy { $0.isSample })
         #expect(await service.isOffline())
     }
 
@@ -51,7 +51,7 @@ struct ResilientServiceTests {
 
         let articles = try await service.fetchArticles(category: nil, page: 1)
 
-        #expect(articles.allSatisfy(\.isSample))
+        #expect(articles.allSatisfy { $0.isSample })
         #expect(await service.isOffline())
     }
 
@@ -81,7 +81,7 @@ struct ResilientServiceTests {
         #expect(comments.isEmpty == false)
     }
 
-    @Test func calls_forCachedRealStoriesStillGoToTheServer() async throws {
+    @Test func callsForCachedRealStoriesStillGoToTheServer() async throws {
         let server = StubServer(.json(Fixtures.articleList))
         let service = makeService(server: server)
         _ = try await service.fetchArticles(category: nil, page: 1)

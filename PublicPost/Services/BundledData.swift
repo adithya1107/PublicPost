@@ -4,8 +4,13 @@ import Foundation
 /// `APIService` as the automatic fallback when the backend can't be reached.
 nonisolated enum BundledData {
 
+    /// The bundled sample stories, each marked `isSample` so the UI can tell them apart.
     static func loadArticles() throws -> [Article] {
-        try load("news", as: [Article].self)
+        try load("news", as: [Article].self).map { article in
+            var sample = article
+            sample.isSample = true
+            return sample
+        }
     }
 
     static func loadComments() throws -> [Comment] {

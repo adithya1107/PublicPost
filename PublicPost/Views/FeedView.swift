@@ -17,6 +17,9 @@ struct FeedView: View {
     var body: some View {
         VStack(spacing: 0) {
             CategoryChipsBar(selection: $viewModel.selectedCategory)
+            if let notice = viewModel.offlineNotice {
+                OfflineBannerView(message: notice)
+            }
             content
         }
         // Runs on first appearance and again whenever the category changes

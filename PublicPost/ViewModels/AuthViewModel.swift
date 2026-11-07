@@ -35,9 +35,11 @@ final class AuthViewModel {
 
     /// A short hint explaining what is still missing, or `nil` when the form is valid.
     var validationHint: String? {
-        if mode == .register && trimmedName.count < 2 { return "Enter a display name (at least 2 characters)." }
+        // These limits mirror the backend's rules, so users get the hint before a round trip.
+        if mode == .register && !(2...30).contains(trimmedName.count) { return "Display name must be 2 to 30 characters." }
         if !trimmedEmail.contains("@") || !trimmedEmail.contains(".") { return "Enter a valid email address." }
-        if password.count < 6 { return "Password must be at least 6 characters." }
+        if mode == .register && password.count < 8 { return "Password must be at least 8 characters." }
+        if password.isEmpty { return "Enter your password." }
         return nil
     }
 
@@ -61,7 +63,7 @@ final class AuthViewModel {
             }
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.friendlyMessage
             return false
         }
     }

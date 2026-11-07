@@ -1,101 +1,101 @@
 [
   {
-    "id": "c01", "article_id": "n01", "author_name": "Meera",
+    "id": "c01", "article_id": "n01", "author_id": "u_meera", "author_name": "Meera",
     "text": "Quiet, clean and cheap to run. I hope they extend this to the other crossings soon.",
     "created_at": "2026-11-07T07:10:00Z", "upvotes": 41, "parent_id": null
   },
   {
-    "id": "c02", "article_id": "n01", "author_name": "Ravi",
+    "id": "c02", "article_id": "n01", "author_id": "u_ravi", "author_name": "Ravi",
     "text": "What happens to the boatmen who lose their jobs? The report should cover that too.",
     "created_at": "2026-11-07T07:30:00Z", "upvotes": 58, "parent_id": null
   },
   {
-    "id": "c03", "article_id": "n01", "author_name": "Meera",
+    "id": "c03", "article_id": "n01", "author_id": "u_meera", "author_name": "Meera",
     "text": "Fair point. Maybe they can be trained to operate and maintain the new boats.",
     "created_at": "2026-11-07T07:45:00Z", "upvotes": 17, "parent_id": "c02"
   },
   {
-    "id": "c04", "article_id": "n02", "author_name": "Kavya",
+    "id": "c04", "article_id": "n02", "author_id": "u_kavya", "author_name": "Kavya",
     "text": "This would have saved me during my finals. Please keep them open all year.",
     "created_at": "2026-11-06T20:00:00Z", "upvotes": 63, "parent_id": null
   },
   {
-    "id": "c05", "article_id": "n02", "author_name": "Dev",
+    "id": "c05", "article_id": "n02", "author_id": "u_dev", "author_name": "Dev",
     "text": "Nice, but is it safe for students to travel home at midnight?",
     "created_at": "2026-11-06T20:40:00Z", "upvotes": 29, "parent_id": null
   },
   {
-    "id": "c06", "article_id": "n02", "author_name": "Kavya",
+    "id": "c06", "article_id": "n02", "author_id": "u_kavya", "author_name": "Kavya",
     "text": "Good question. The article says the city is adding extra night buses on those routes.",
     "created_at": "2026-11-06T21:05:00Z", "upvotes": 11, "parent_id": "c05"
   },
   {
-    "id": "c07", "article_id": "n04", "author_name": "Teacher_Anita",
+    "id": "c07", "article_id": "n04", "author_id": "u_teacher_anita", "author_name": "Teacher_Anita",
     "text": "Coding is useful, but half of our school's computers don't work. Fix the basics first.",
     "created_at": "2026-11-05T15:00:00Z", "upvotes": 72, "parent_id": null
   },
   {
-    "id": "c08", "article_id": "n04", "author_name": "Sameer",
+    "id": "c08", "article_id": "n04", "author_id": "u_sameer", "author_name": "Sameer",
     "text": "Start small with unplugged logic puzzles. You don't need a computer to teach thinking.",
     "created_at": "2026-11-05T15:30:00Z", "upvotes": 36, "parent_id": "c07"
   },
   {
-    "id": "c09", "article_id": "n04", "author_name": "Nisha",
+    "id": "c09", "article_id": "n04", "author_id": "u_nisha", "author_name": "Nisha",
     "text": "I'm in favour. Early exposure matters, even if the rollout is slow.",
     "created_at": "2026-11-05T16:10:00Z", "upvotes": 24, "parent_id": null
   },
   {
-    "id": "c10", "article_id": "n07", "author_name": "Lena",
+    "id": "c10", "article_id": "n07", "author_id": "u_lena", "author_name": "Lena",
     "text": "About time. Most of this packaging is used for ten minutes and lasts for centuries.",
     "created_at": "2026-11-06T17:00:00Z", "upvotes": 55, "parent_id": null
   },
   {
-    "id": "c11", "article_id": "n07", "author_name": "Marco",
+    "id": "c11", "article_id": "n07", "author_id": "u_marco", "author_name": "Marco",
     "text": "Small producers will struggle with the extra cost. The grants need to be real, not promises.",
     "created_at": "2026-11-06T17:25:00Z", "upvotes": 48, "parent_id": null
   },
   {
-    "id": "c12", "article_id": "n10", "author_name": "Tariq",
+    "id": "c12", "article_id": "n10", "author_id": "u_tariq", "author_name": "Tariq",
     "text": "Ten minutes sounds amazing, but I'll wait for independent tests before getting excited.",
     "created_at": "2026-11-07T04:30:00Z", "upvotes": 96, "parent_id": null
   },
   {
-    "id": "c13", "article_id": "n10", "author_name": "Priya",
+    "id": "c13", "article_id": "n10", "author_id": "u_priya", "author_name": "Priya",
     "text": "Agreed. Fast charging usually wears the battery down quicker. Cycle life is the real test.",
     "created_at": "2026-11-07T04:50:00Z", "upvotes": 61, "parent_id": "c12"
   },
   {
-    "id": "c14", "article_id": "n12", "author_name": "Jamal",
+    "id": "c14", "article_id": "n12", "author_id": "u_jamal", "author_name": "Jamal",
     "text": "Labels help, but people will still share things without reading them.",
     "created_at": "2026-11-06T14:00:00Z", "upvotes": 34, "parent_id": null
   },
   {
-    "id": "c15", "article_id": "n15", "author_name": "Arjun",
+    "id": "c15", "article_id": "n15", "author_id": "u_arjun", "author_name": "Arjun",
     "text": "Part-time players beating top-division teams. This is why I love the cup!",
     "created_at": "2026-11-07T07:20:00Z", "upvotes": 88, "parent_id": null
   },
   {
-    "id": "c16", "article_id": "n15", "author_name": "Sofia",
+    "id": "c16", "article_id": "n15", "author_id": "u_sofia", "author_name": "Sofia",
     "text": "I'm travelling up for the final. Anyone know if tickets are still available?",
     "created_at": "2026-11-07T07:40:00Z", "upvotes": 14, "parent_id": null
   },
   {
-    "id": "c17", "article_id": "n18", "author_name": "Hannah",
+    "id": "c17", "article_id": "n18", "author_id": "u_hannah", "author_name": "Hannah",
     "text": "Equal prize money should have been standard years ago. Good to see it change.",
     "created_at": "2026-11-05T11:10:00Z", "upvotes": 67, "parent_id": null
   },
   {
-    "id": "c18", "article_id": "n23", "author_name": "Oceanfan",
+    "id": "c18", "article_id": "n23", "author_id": "u_oceanfan", "author_name": "Oceanfan",
     "text": "Protecting the area from trawling now seems like the sensible, low-regret option.",
     "created_at": "2026-11-07T03:15:00Z", "upvotes": 45, "parent_id": null
   },
   {
-    "id": "c19", "article_id": "n24", "author_name": "Stargazer_Li",
+    "id": "c19", "article_id": "n24", "author_id": "u_stargazer_li", "author_name": "Stargazer_Li",
     "text": "I'll be ready with my binoculars. Hopefully it doesn't fade out like the last one.",
     "created_at": "2026-11-06T13:00:00Z", "upvotes": 31, "parent_id": null
   },
   {
-    "id": "c20", "article_id": "n19", "author_name": "Farah",
+    "id": "c20", "article_id": "n19", "author_id": "u_farah", "author_name": "Farah",
     "text": "Easy credit is useful, but please read the interest terms. Short loans add up fast.",
     "created_at": "2026-11-07T04:00:00Z", "upvotes": 52, "parent_id": null
   }

@@ -23,6 +23,8 @@ final class FeedViewModel {
     var refreshError: String?
     /// Set when sending a vote fails (the vote has already been rolled back).
     var voteError: String?
+    /// Shown as a banner when the server can't be reached; `nil` when everything is live.
+    private(set) var offlineNotice: String?
 
     // MARK: - Private
 
@@ -54,20 +56,29 @@ final class FeedViewModel {
         if showSpinner {
             articles = []
             state = .loading
+            // Show the last saved stories instantly (if there are any) while the real load runs.
+            let saved = await service.cachedArticles(category: selectedCategory)
+            guard currentGeneration == generation else { return }
+            if !saved.isEmpty {
+                articles = saved
+                state = .loaded
+            }
         }
 
         do {
             let result = try await service.fetchArticles(category: selectedCategory, page: 1)
+            let notice = await offlineNotice(for: result)
             guard currentGeneration == generation else { return }
+            offlineNotice = notice
             articles = result
             canLoadMore = result.count >= Config.pageSize
             state = result.isEmpty ? .empty : .loaded
         } catch {
             guard currentGeneration == generation, !isCancellation(error) else { return }
             if articles.isEmpty {
-                state = .error(error.localizedDescription)
+                state = .error(error.friendlyMessage)
             } else {
-                refreshError = error.localizedDescription   // keep what we already have
+                refreshError = error.userMessage   // keep what we already have
             }
         }
     }
@@ -130,7 +141,7 @@ final class FeedViewModel {
                 articles[i].downvotes = original.downvotes
                 articles[i].userVote = original.userVote
             }
-            voteError = error.localizedDescription
+            voteError = error.userMessage   // nil (no alert) when the session expired
         }
     }
 
@@ -140,6 +151,14 @@ final class FeedViewModel {
     func updateCommentCount(articleId: String, count: Int) {
         guard let index = articles.firstIndex(where: { $0.id == articleId }) else { return }
         articles[index].commentCount = count
+    }
+
+    /// The banner text for a freshly loaded page 1, or `nil` if it came from the server.
+    private func offlineNotice(for articles: [Article]) async -> String? {
+        guard await service.isOffline() else { return nil }
+        return articles.first?.isSample == true
+            ? "Offline – showing sample stories"
+            : "Offline – showing saved stories"
     }
 
     private func isCancellation(_ error: Error) -> Bool {
