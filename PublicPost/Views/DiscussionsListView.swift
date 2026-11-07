@@ -15,6 +15,9 @@ struct DiscussionsListView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 CategoryChipsBar(selection: $viewModel.selectedCategory)
+                if let notice = viewModel.offlineNotice {
+                    OfflineBannerView(message: notice)
+                }
                 content
             }
             .navigationTitle("Discussions")

@@ -46,13 +46,16 @@ struct ArticleCardView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)   // wrap instead of truncating
 
-                Button(action: onReadFullArticle) {
-                    Label("Read full article", systemImage: "safari")
-                        .frame(maxWidth: .infinity)
+                // Sample (bundled) stories have placeholder links, so there is nothing to open.
+                if !article.isSample {
+                    Button(action: onReadFullArticle) {
+                        Label("Read full article", systemImage: "safari")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .accessibilityHint("Opens the original article in the app")
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityHint("Opens the original article in the app")
             }
             .padding()
         }

@@ -1,28 +1,41 @@
 import Foundation
 
-/// Wraps the real `APIService` and falls back to the bundled data (`MockService`)
-/// when the backend can't be reached, so the app always has something to show.
+/// Wraps the real `APIService` and keeps the app useful when the backend can't be reached.
+///
+/// Where page 1 of the feed comes from, in order of preference:
+///   1. the server (and the result is saved to the disk cache);
+///   2. the disk cache: the last real stories we loaded;
+///   3. the stories bundled in the app (samples), if there is nothing cached yet.
 ///
 /// How it decides:
-/// - Loading page 1 of the feed is the "health check". If it fails, we switch to the bundled
-///   news; if it succeeds, we switch back to the API.
-/// - While on the bundled news, every article, comment and vote call also goes to the mock,
-///   because those article ids only exist in the bundle (the server wouldn't know them).
+/// - Loading page 1 of the feed is the "health check". If it fails we use (2) or (3); if it
+///   succeeds we are back on (1).
+/// - While showing samples, article, comment and vote calls also go to the mock, because those
+///   ids only exist in the bundle. While showing cached real stories they still go to the
+///   server (they will fail with a friendly "offline" message rather than a confusing "not found").
 /// - Paging beyond page 1 never falls back on its own, so server and bundled pages never mix.
 actor ResilientService: NewsService, DiscussionService {
 
+    private enum Source {
+        case live       // the server answered
+        case cache      // server unreachable; showing the last real stories
+        case sample     // server unreachable and nothing cached; showing bundled samples
+    }
+
     private let primary: APIService
     private let fallback: MockService
-    private var usingFallback = false
+    private let cache: FeedCache
+    private var source = Source.live
 
-    init(primary: APIService, fallback: MockService) {
+    init(primary: APIService, fallback: MockService, cache: FeedCache = .shared) {
         self.primary = primary
         self.fallback = fallback
+        self.cache = cache
     }
 
     /// The service that article / comment calls should go to right now.
     private var current: any (NewsService & DiscussionService) {
-        usingFallback ? fallback : primary
+        source == .sample ? fallback : primary
     }
 
     // MARK: - NewsService
@@ -33,13 +46,26 @@ actor ResilientService: NewsService, DiscussionService {
         }
         do {
             let articles = try await primary.fetchArticles(category: category, page: 1)
-            usingFallback = false
+            source = .live
+            cache.save(articles, category: category)
             return articles
         } catch {
             if error is CancellationError { throw error }
-            usingFallback = true
+            if let saved = cache.load(category: category) {
+                source = .cache
+                return saved
+            }
+            source = .sample
             return try await fallback.fetchArticles(category: category, page: 1)
         }
+    }
+
+    func cachedArticles(category: NewsCategory?) async -> [Article] {
+        cache.load(category: category) ?? []
+    }
+
+    func isOffline() async -> Bool {
+        source != .live
     }
 
     func fetchArticle(id: String) async throws -> Article {
@@ -66,5 +92,13 @@ actor ResilientService: NewsService, DiscussionService {
 
     func fetchMyComments() async throws -> [Comment] {
         try await current.fetchMyComments()
+    }
+
+    func reportComment(commentId: String, reason: ReportReason) async throws {
+        try await current.reportComment(commentId: commentId, reason: reason)
+    }
+
+    func blockUser(userId: String) async throws {
+        try await current.blockUser(userId: userId)
     }
 }

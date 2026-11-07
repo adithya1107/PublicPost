@@ -13,6 +13,7 @@ struct RootView: View {
             ProfileView()
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
         }
+        .sessionExpiredAlert()
     }
 }
 

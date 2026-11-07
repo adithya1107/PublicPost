@@ -44,6 +44,12 @@ final class DiscussionViewModel {
     private(set) var lastPostedCommentID: String?
     /// Set when posting or upvoting fails (shown as an alert).
     var actionError: String?
+    /// A confirmation to show after reporting a comment or blocking a user.
+    var notice: String?
+
+    /// Authors the user has blocked this session; their comments are hidden immediately.
+    /// (The server also leaves them out of later fetches.)
+    private(set) var blockedAuthorIDs: Set<String> = []
 
     // MARK: - Private
 
@@ -67,10 +73,12 @@ final class DiscussionViewModel {
     /// Top-level comments in the chosen order, each with its replies (oldest reply first,
     /// so a conversation reads top to bottom).
     var threads: [CommentThread] {
-        let ids = Set(comments.map(\.id))
+        // Comments from blocked users are hidden straight away.
+        let visible = comments.filter { !blockedAuthorIDs.contains($0.authorId) }
+        let ids = Set(visible.map(\.id))
         // A reply whose parent is missing is shown as a normal comment rather than hidden.
-        let topLevel = comments.filter { $0.parentId == nil || !ids.contains($0.parentId ?? "") }
-        let repliesByParent = Dictionary(grouping: comments.filter { $0.parentId != nil }, by: { $0.parentId! })
+        let topLevel = visible.filter { $0.parentId == nil || !ids.contains($0.parentId ?? "") }
+        let repliesByParent = Dictionary(grouping: visible.filter { $0.parentId != nil }, by: { $0.parentId! })
 
         let sorted: [Comment]
         switch sort {
@@ -104,9 +112,9 @@ final class DiscussionViewModel {
         } catch {
             if error is CancellationError || (error as? URLError)?.code == .cancelled { return }
             if comments.isEmpty {
-                state = .error(error.localizedDescription)
+                state = .error(error.friendlyMessage)
             } else {
-                actionError = error.localizedDescription   // keep showing what we have
+                actionError = error.userMessage   // keep showing what we have
             }
         }
     }
@@ -141,7 +149,33 @@ final class DiscussionViewModel {
             lastPostedCommentID = created.id
             onCommentCountChange(comments.count)
         } catch {
-            actionError = error.localizedDescription   // draft is kept so nothing is lost
+            actionError = error.userMessage   // draft is kept so nothing is lost
+        }
+    }
+
+    // MARK: - Moderation (App Store guideline 1.2)
+
+    /// Flags a comment for the moderators.
+    func report(_ comment: Comment, reason: ReportReason) async {
+        do {
+            try await service.reportComment(commentId: comment.id, reason: reason)
+            notice = "Thanks for letting us know. We'll review this comment."
+        } catch {
+            actionError = error.userMessage
+        }
+    }
+
+    /// Blocks the comment's author: hides their comments at once, then tells the server.
+    /// If the server call fails, the comments come back and an error is shown.
+    func block(_ comment: Comment) async {
+        let authorId = comment.authorId
+        blockedAuthorIDs.insert(authorId)          // optimistic: hide immediately
+        do {
+            try await service.blockUser(userId: authorId)
+            notice = "You won't see comments from \(comment.authorName) any more."
+        } catch {
+            blockedAuthorIDs.remove(authorId)      // roll back
+            actionError = error.userMessage
         }
     }
 
@@ -174,7 +208,7 @@ final class DiscussionViewModel {
                 comments[i].userUpvoted = original.userUpvoted
                 comments[i].upvotes = original.upvotes
             }
-            actionError = error.localizedDescription
+            actionError = error.userMessage
         }
     }
 }

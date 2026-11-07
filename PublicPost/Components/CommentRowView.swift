@@ -7,15 +7,22 @@ struct CommentRowView: View {
     let onUpvote: () -> Void
     /// `nil` hides the Reply button (replies can't have replies).
     let onReply: (() -> Void)?
+    /// Moderation actions (App Store guideline 1.2). `nil` hides the menu, e.g. on my own comments.
+    var onReport: ((ReportReason) -> Void)? = nil
+    var onBlock: (() -> Void)? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             avatar
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("\(Text(comment.authorName).fontWeight(.semibold)) · \(comment.createdAt.formatted(.relative(presentation: .named)))")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline) {
+                    Text("\(Text(comment.authorName).fontWeight(.semibold)) · \(comment.createdAt.formatted(.relative(presentation: .named)))")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    moderationButton
+                }
 
                 Text(comment.text)
                     .font(.body)
@@ -49,6 +56,41 @@ struct CommentRowView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 10)
+        // Long-press shows the same menu as the "…" button.
+        .contextMenu {
+            if onReport != nil || onBlock != nil { moderationItems }
+        }
+    }
+
+    /// A visible "…" button, so the report and block options are easy to find.
+    @ViewBuilder
+    private var moderationButton: some View {
+        if onReport != nil || onBlock != nil {
+            Menu {
+                moderationItems
+            } label: {
+                Image(systemName: "ellipsis")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 32, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("More options for \(comment.authorName)'s comment")
+        }
+    }
+
+    /// Report (with a reason) and Block, shared by the "…" menu and the long-press menu.
+    @ViewBuilder
+    private var moderationItems: some View {
+        if let onReport {
+            Menu("Report", systemImage: "flag") {
+                ForEach(ReportReason.allCases) { reason in
+                    Button(reason.title) { onReport(reason) }
+                }
+            }
+        }
+        if let onBlock {
+            Button("Block \(comment.authorName)", systemImage: "hand.raised", role: .destructive, action: onBlock)
+        }
     }
 
     /// Circle with the author's first letter.

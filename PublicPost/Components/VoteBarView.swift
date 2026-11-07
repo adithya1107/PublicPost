@@ -27,7 +27,8 @@ struct VoteBarView: View {
         .animation(.snappy, value: userVote)
         // Haptics: a firmer tap when a vote is cast, a light tick when it is removed.
         .sensoryFeedback(trigger: userVote) { _, newVote in
-            newVote == .none ? .selection : .impact(flexibility: .soft)
+            // `Vote.none` spelled out: a bare `.none` would mean Optional.none here.
+            newVote == Vote.none ? .selection : .impact(flexibility: .soft)
         }
     }
 
