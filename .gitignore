@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets
+.env
+
+# Xcode
+xcuserdata/
+DerivedData/
