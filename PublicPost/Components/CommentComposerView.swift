@@ -39,7 +39,7 @@ struct CommentComposerView: View {
                 .focused(isFocused)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 18))
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
 
                 Button(action: onSend) {
                     if isPosting {

@@ -59,11 +59,8 @@ struct ArticleCardView: View {
             }
             .padding()
         }
-        // On iPad and Mac the card stays a comfortable reading column instead of stretching
-        // across the whole screen; the background still fills the width.
-        .frame(maxWidth: 720)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.appBackground)
+        .background(Color(.systemBackground))
     }
 
     /// Opens the discussion thread for this story.
@@ -78,7 +75,7 @@ struct ArticleCardView: View {
             .font(.headline)
             .padding(.horizontal, 14)
             .frame(minHeight: 44)
-            .background(Color.appSecondaryBackground, in: Capsule())
+            .background(Color(.secondarySystemBackground), in: Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(article.commentCount) \(article.commentCount == 1 ? "comment" : "comments")")
@@ -87,7 +84,7 @@ struct ArticleCardView: View {
 
     /// Top ~35% of the card. Shows a placeholder when there is no URL or loading fails.
     private var image: some View {
-        Color.appSecondaryBackground
+        Color(.secondarySystemBackground)
             .overlay {
                 AsyncImage(url: article.imageURL) { phase in
                     switch phase {

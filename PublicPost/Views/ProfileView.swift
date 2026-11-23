@@ -27,7 +27,7 @@ struct ProfileView: View {
             .navigationTitle("Profile")
             .toolbar {
                 if auth.isLoggedIn {
-                    ToolbarItem(placement: .primaryAction) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button("Log out") { isConfirmingLogout = true }
                     }
                 }
