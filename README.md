@@ -4,8 +4,8 @@ An Inshorts-style news feed with Reddit-style discussion. Swipe through ~60-word
 original article, vote on stories, and read, write, report and block in the discussion, so you can see
 *different public perspectives* on the same story instead of being told which one is right.
 
-- **iOS app:** Swift + SwiftUI (iOS only), `@Observable` + MVVM, `URLSession` + `async/await` + `Codable`.
-  No third-party packages.
+- **Apps:** Swift + SwiftUI for **iPhone, iPad, Mac and Apple Watch**, `@Observable` + MVVM, `URLSession` +
+  `async/await` + `Codable`. No third-party packages.
 - **Backend:** FastAPI in [`backend/`](backend/README.md) (news ingestion, voting, comments, accounts, moderation).
 
 ## Run the app and the backend together
@@ -24,22 +24,24 @@ original article, vote on stories, and read, write, report and block in the disc
 
    Articles appear a few seconds after the first start, while the server fetches the news feeds.
 
-2. **Run the app:** open `PublicPost.xcodeproj`, choose an **iPhone simulator**, and press Run.
-   In Debug the app talks to `http://127.0.0.1:8000`, which the simulator can reach on your Mac.
+2. **Run the app:** open `PublicPost.xcodeproj`, pick a destination (an iPhone or iPad simulator, *My Mac*, or the
+   Watch simulator with the **PublicPostWatch Watch App** scheme) and press Run. In Debug the app talks to
+   `http://127.0.0.1:8000`, which simulators and the Mac can reach.
 
 3. **No backend?** The app still works. If the server can't be reached it shows saved stories (or the
    bundled sample stories on a first launch) under an "Offline" banner. To run completely offline with
    sample data, set `Config.useMockService = true`.
 
-### Testing on a real iPhone
+### Testing on a real iPhone or Apple Watch
 
-A phone can't reach `127.0.0.1` (that is the phone itself), so point the app at your Mac instead:
+A phone or watch can't reach `127.0.0.1` (that is the device itself), so point the app at your Mac instead:
 
 1. Start the backend listening on your network: `uv run uvicorn app.main:app --host 0.0.0.0`
 2. Find your Mac's address: *System Settings > Wi-Fi > Details > IP address*, or run `ipconfig getifaddr en0`
    (for example `192.168.1.23`).
 3. In `PublicPost/App/Config.swift`, change the **Debug** `baseURL` to `http://192.168.1.23:8000`.
-4. Put the phone and the Mac on the same Wi-Fi, then run on the device.
+4. Put the device and the Mac on the same Wi-Fi, then run on the device. (The Mac app itself can keep using
+   `127.0.0.1`; the watch and iPhone apps share the same `Config.baseURL`.)
 
 Plain HTTP is allowed only for local network addresses (`NSAllowsLocalNetworking` in the app's Info.plist).
 Arbitrary HTTP loads are **not** enabled, so a real server must use HTTPS.
@@ -49,6 +51,25 @@ Arbitrary HTTP loads are **not** enabled, so a real server must use HTTPS.
 The **Release** `baseURL` in `Config.swift` is a placeholder (`http://127.0.0.1:8000`). Replace it with
 the production **HTTPS** URL after the backend is deployed. Also read the backend README's notes on
 publisher terms and moderation: App Store guideline 1.2 expects timely action on reports.
+
+## Platforms
+
+| Platform | What you get |
+|---|---|
+| **iPhone** | Full app: swipe feed, voting, discussions, accounts, profile. Bottom tab bar. "Read full article" opens an in-app Safari sheet. |
+| **iPad** | Same app. Tabs become a **sidebar**, and story cards stay a 720 pt reading column instead of stretching across the screen. |
+| **Mac** (native) | Same app in a resizable window with the sidebar. "Read full article" opens your default browser. The Mac sandbox has the *outgoing network connections* permission so it can reach the server. |
+| **Apple Watch** | A reader: headlines (with category picker and pull to refresh), story summaries and scores, and read-only discussions. Voting and commenting need an account, so they stay on the other devices. |
+
+The watch app (`PublicPostWatch Watch App/`) is a **companion**: it is embedded in the iPhone app (on iOS only), and it
+**shares** the iPhone app's models, services and view models. Only the screens are different. The shared
+folders are compiled into both targets; the iPhone / iPad / Mac screens (`Views/`, `Components/`,
+`App/MyApp.swift`) are excluded from the watch target.
+
+> **Adding files:** new files in `PublicPost/Views` or `PublicPost/Components` must also be added to the watch
+> target's exclusion list (target > *Build Phases* > the folder's membership exceptions), or the watch build will
+> try to compile them. Platform differences inside shared views are handled with `#if os(...)` and the helpers
+> in `Components/PlatformSupport.swift`.
 
 ## Architecture (MVVM)
 
@@ -72,6 +93,7 @@ View  ──►  ViewModel (@Observable)  ──►  Service protocol  ──►
 | `Components` | Reusable pieces: article card, vote bar, comment row, composer, banners, state views, Safari wrapper |
 | `Resources` | `news.json` (25 sample articles) and `comments.json`, used by the mock and as the offline fallback |
 | `PublicPostTests` | Unit tests (Swift Testing) |
+| `PublicPostWatch Watch App` | Apple Watch screens (list, story, comments) |
 
 ### Key ideas
 
@@ -139,6 +161,8 @@ Backend tests: `cd backend && uv run pytest`.
 - Mock votes, comments and accounts (used by previews and `useMockService = true`) live in memory and
   reset on relaunch. Mock votes are global, not per account.
 - There is no screen to unblock a user: the backend has a route to block but none to list blocked users.
+- The Apple Watch app is a reader: no login, voting or commenting on the watch yet.
+- iPad and Mac layouts were verified by building; the iPad simulator was not available for screenshots.
 - The app icon is a generated placeholder. It only appears once the target's *App Icon* is set to
   `AppIcon` (target > General > App Icons and Launch Screen).
 - No password reset or email verification (the backend doesn't offer them yet).

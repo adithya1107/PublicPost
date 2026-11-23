@@ -21,7 +21,7 @@ struct DiscussionsListView: View {
                 content
             }
             .navigationTitle("Discussions")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineNavigationTitle()
             // Runs on first appearance and whenever the category changes.
             .task(id: viewModel.selectedCategory) {
                 await viewModel.reload(showSpinner: true)
