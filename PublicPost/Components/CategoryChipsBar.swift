@@ -28,7 +28,7 @@ struct CategoryChipsBar: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .foregroundStyle(isSelected ? Color.white : Color.primary)
-                .background(isSelected ? Color.accentColor : Color(.secondarySystemBackground), in: Capsule())
+                .background(isSelected ? Color.accentColor : Color.appSecondaryBackground, in: Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

@@ -4,6 +4,7 @@ import SwiftUI
 /// that the user swipes through vertically.
 struct FeedView: View {
     @Environment(AuthManager.self) private var auth
+    @Environment(\.openURL) private var openURL
     @State private var viewModel: FeedViewModel
     @State private var loginPrompt: LoginPrompt?
     @State private var safariDestination: SafariDestination?
@@ -27,10 +28,13 @@ struct FeedView: View {
         .task(id: viewModel.selectedCategory) {
             await viewModel.reload(showSpinner: true)
         }
+        #if os(iOS)
+        // iPhone / iPad: the original article opens in an in-app Safari sheet.
         .sheet(item: $safariDestination) { destination in
             SafariView(url: destination.url)
                 .ignoresSafeArea()
         }
+        #endif
         .sheet(item: $discussionArticle) { article in
             DiscussionView(
                 viewModel: DiscussionViewModel(article: article) { count in
@@ -91,7 +95,7 @@ struct FeedView: View {
                     } onOpenDiscussion: {
                         discussionArticle = article
                     } onReadFullArticle: {
-                        safariDestination = SafariDestination(url: article.articleURL)
+                        openArticle(at: article.articleURL)
                     }
                     .containerRelativeFrame(.vertical)
                     .task { await viewModel.loadMoreIfNeeded(currentArticle: article) }
@@ -102,6 +106,16 @@ struct FeedView: View {
         .scrollTargetBehavior(.paging)
         .scrollIndicators(.hidden)
         .refreshable { await viewModel.reload(showSpinner: false) }
+    }
+
+    /// Opens the original article: in an in-app Safari sheet on iPhone / iPad, and in the
+    /// default browser on Mac (which has no in-app Safari view).
+    private func openArticle(at url: URL) {
+        #if os(iOS)
+        safariDestination = SafariDestination(url: url)
+        #else
+        openURL(url)
+        #endif
     }
 
     private var voteErrorBinding: Binding<Bool> {

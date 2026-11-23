@@ -1,18 +1,22 @@
 import SwiftUI
 
-/// App root: the tab bar (Feed, Discussions, Profile).
+/// App root: Feed, Discussions and Profile.
+/// iPhone shows a bottom tab bar; on iPad and Mac the same tabs appear as a sidebar
+/// (`.sidebarAdaptable`), which suits the larger screens.
 struct RootView: View {
     var body: some View {
         TabView {
-            FeedView()
-                .tabItem { Label("Feed", systemImage: "newspaper") }
-
-            DiscussionsListView()
-                .tabItem { Label("Discussions", systemImage: "bubble.left.and.bubble.right") }
-
-            ProfileView()
-                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+            Tab("Feed", systemImage: "newspaper") {
+                FeedView()
+            }
+            Tab("Discussions", systemImage: "bubble.left.and.bubble.right") {
+                DiscussionsListView()
+            }
+            Tab("Profile", systemImage: "person.crop.circle") {
+                ProfileView()
+            }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .sessionExpiredAlert()
     }
 }

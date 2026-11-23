@@ -37,13 +37,10 @@ struct AuthView: View {
                 Section {
                     if viewModel.mode == .register {
                         TextField("Display name", text: $viewModel.displayName)
-                            .textContentType(.nickname)
+                            .displayNameFieldBehavior()
                     }
                     TextField("Email", text: $viewModel.email)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                        .emailFieldBehavior()
                     SecureField("Password", text: $viewModel.password)
                         .textContentType(viewModel.mode == .login ? .password : .newPassword)
                 } footer: {
@@ -83,7 +80,8 @@ struct AuthView: View {
                 }
             }
             .navigationTitle(viewModel.mode.rawValue)
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineNavigationTitle()
+            .macSheetSize(minWidth: 440, minHeight: 460)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Continue as guest") { dismiss() }
