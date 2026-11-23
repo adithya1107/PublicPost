@@ -22,7 +22,7 @@ struct VoteBarView: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(Color.appSecondaryBackground, in: Capsule())
+        .background(Color(.secondarySystemBackground), in: Capsule())
         .animation(.snappy, value: score)
         .animation(.snappy, value: userVote)
         // Haptics: a firmer tap when a vote is cast, a light tick when it is removed.

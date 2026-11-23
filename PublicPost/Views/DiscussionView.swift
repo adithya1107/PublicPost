@@ -19,7 +19,7 @@ struct DiscussionView: View {
         NavigationStack {
             content
                 .navigationTitle("Discussion")
-                .inlineNavigationTitle()
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }
@@ -47,7 +47,6 @@ struct DiscussionView: View {
                     }
                 }
         }
-        .macSheetSize()
         .task { await viewModel.load() }
         .loginSheet(item: $loginPrompt)
         .sessionExpiredAlert()   // this sheet covers the root view, so it shows the alert itself
@@ -114,7 +113,7 @@ struct DiscussionView: View {
                 .padding(.horizontal)
             }
             .refreshable { await viewModel.load(showSpinner: false) }
-            .dismissKeyboardOnScroll()
+            .scrollDismissesKeyboard(.interactively)
             // After posting, jump to the new comment (it may be low in the "Top" order).
             .onChange(of: viewModel.lastPostedCommentID) { _, newID in
                 guard let newID else { return }
@@ -171,7 +170,7 @@ struct DiscussionView: View {
                 .overlay(alignment: .leading) {
                     // Thin line marking the reply as part of the thread.
                     Rectangle()
-                        .fill(Color.appSeparator)
+                        .fill(Color(.separator))
                         .frame(width: 2)
                         .padding(.leading, 14)
                 }

@@ -12,12 +12,6 @@ import SwiftUI
         WindowGroup {
             RootView()
                 .environment(auth)
-                #if os(macOS)
-                .frame(minWidth: 520, minHeight: 640)   // keep the Mac window usable when resized
-                #endif
         }
-        #if os(macOS)
-        .defaultSize(width: 900, height: 820)
-        #endif
     }
 }
