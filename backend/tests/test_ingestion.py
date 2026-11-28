@@ -32,8 +32,8 @@ from app.url_utils import article_id
 from tests.factories import make_article, make_user
 
 MEDIA_NS = 'xmlns:media="http://search.yahoo.com/mrss/"'
-TECH_FEED = Feed("https://feeds.test/tech", "Tech Source", NewsCategory.TECH, "test")
-WORLD_FEED = Feed("https://feeds.test/world", "World Source", NewsCategory.WORLD, "test")
+TECH_FEED = Feed("https://feeds.test/tech", "Tech Source", NewsCategory.TECH)
+WORLD_FEED = Feed("https://feeds.test/world", "World Source", NewsCategory.WORLD)
 
 
 def item(

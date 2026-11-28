@@ -6,20 +6,11 @@ nonisolated enum Config {
 
     // MARK: - Backend URL  (the ONE place to change it)
 
+    /// Backend URL (ngrok tunnel to the local FastAPI server).
     #if DEBUG
-    /// Debug builds (running from Xcode). The simulator reaches your Mac at 127.0.0.1.
-    ///
-    /// TESTING ON A REAL iPHONE: the phone can't see "127.0.0.1" (that is the phone itself).
-    ///   1. Start the backend with `uv run uvicorn app.main:app --host 0.0.0.0`
-    ///   2. Find your Mac's address: System Settings > Wi-Fi > Details > IP address
-    ///      (or run `ipconfig getifaddr en0`), e.g. 192.168.1.23
-    ///   3. Replace the URL below with `http://192.168.1.23:8000` (phone and Mac on the same Wi-Fi).
-    ///   Plain HTTP is only allowed to local network addresses (see NSAllowsLocalNetworking).
-    static let baseURL = URL(string: "http://127.0.0.1:8000")!
+    static let baseURL = URL(string: "https://empower-obtrusive-cultural.ngrok-free.dev")!
     #else
-    /// Release builds. TODO: replace with the production HTTPS URL after deployment,
-    /// e.g. `https://api.example.com`. Until then this only works against a local server.
-    static let baseURL = URL(string: "http://127.0.0.1:8000")!
+    static let baseURL = URL(string: "https://empower-obtrusive-cultural.ngrok-free.dev")!
     #endif
 
     // MARK: - Mock / real switch

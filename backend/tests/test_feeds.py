@@ -16,10 +16,10 @@ def test_every_category_has_at_least_two_feeds() -> None:
     assert {category: counts[category] for category in NewsCategory if counts[category] < 2} == {}
 
 
-def test_feed_urls_are_unique_https_with_terms_recorded() -> None:
+def test_feed_urls_are_unique_https() -> None:
     assert len({feed.url for feed in FEEDS}) == len(FEEDS)
     assert all(feed.url.startswith("https://") for feed in FEEDS)
-    assert all(feed.terms and feed.source_name for feed in FEEDS)
+    assert all(feed.source_name for feed in FEEDS)
 
 
 @pytest.mark.live
