@@ -13,7 +13,7 @@ extension Notification.Name {
     nonisolated static let sessionExpired = Notification.Name("PublicPost.sessionExpired")
 }
 
-/// Account operations. Implemented by `MockAuthService` and (Phase 6) `APIService`.
+/// Account operations. Implemented by `MockAuthService` and `APIService`.
 nonisolated protocol AuthService: Sendable {
     /// POST /auth/register
     func register(displayName: String, email: String, password: String) async throws -> AuthSession

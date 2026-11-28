@@ -7,9 +7,7 @@ __pycache__/
 htmlcov/
 
 # Local SQLite databases
-*.db
-*.db-shm
-*.db-wal
+*.db*
 
 # Secrets
 .env
@@ -17,3 +15,6 @@ htmlcov/
 # Xcode
 xcuserdata/
 DerivedData/
+
+# macOS
+.DS_Store

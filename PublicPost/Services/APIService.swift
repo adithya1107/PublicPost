@@ -10,7 +10,6 @@ import Foundation
 ///   POST /articles/{id}/comments        {"text", "parent_id"?} -> Comment
 ///   POST /auth/register                 {"display_name", "email", "password"} -> {token, user}
 ///   POST /auth/login                    {"email", "password"} -> {token, user}
-/// Extra routes this app proposes (not in the original contract):
 ///   POST /comments/{id}/upvote          {"upvoted": bool} -> {"upvotes": Int}
 ///   GET  /users/me/comments             -> [Comment]
 ///   POST /comments/{id}/report          {"reason": "spam"|"abuse"|"misinformation"|"other"} -> 204
